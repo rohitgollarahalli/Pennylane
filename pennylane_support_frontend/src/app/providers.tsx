@@ -1,26 +1,31 @@
-'use client'
+// src/app/providers.tsx
+'use client';
 
-import { ChakraProvider } from '@chakra-ui/react'
-import { ApolloProvider } from '@apollo/client'
-import { Auth0Provider } from '@auth0/auth0-react'
-import { client } from '@/app/lib/apolloClient'
-import { AuthenticatedSync } from '@/app/features/auth/AuthenticatedSync'
+import { ApolloProvider } from '@apollo/client';
+import apolloClient from '@/app/lib/apolloClient';
+import { Auth0Provider } from '@auth0/auth0-react';
+import { ChakraProvider } from '@chakra-ui/react';
+import { AuthenticatedSync } from '@/app/features/auth/AuthenticatedSync';
 
-export const Providers = ({ children }: { children: React.ReactNode }) => {
+export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <Auth0Provider
       domain={process.env.NEXT_PUBLIC_AUTH0_DOMAIN!}
       clientId={process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID!}
       authorizationParams={{
-        redirect_uri: typeof window !== 'undefined' ? window.location.origin : '',
+        audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
+        redirect_uri: process.env.NEXT_PUBLIC_AUTH0_REDIRECT_URI,
+        scope: 'openid profile email',
       }}
+      cacheLocation="localstorage"
     >
-      <ApolloProvider client={client}>
+      <ApolloProvider client={apolloClient}>
         <ChakraProvider>
-          {children}
+          {/* Sets the token into apollo after login */}
           <AuthenticatedSync />
+          {children}
         </ChakraProvider>
       </ApolloProvider>
     </Auth0Provider>
-  )
+  );
 }
